@@ -5,6 +5,7 @@ const {
   login,
   me,
   logout,
+  verifyOtp,
 } = require("../controller/publicController");
 const rateLimit = require("express-rate-limit");
 const authMiddleware = require("../../../middlewares/Authentication");
@@ -25,5 +26,7 @@ publicRouter.post("/login", login);
 publicRouter.get("/me", authMiddleware, me);
 
 publicRouter.post("/logout", authMiddleware, logout);
+
+publicRouter.post("/verify-otp", verifyOtp)
 
 module.exports = publicRouter;

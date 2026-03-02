@@ -38,6 +38,26 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
+    // 🔐 Email Verification
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    otp: {
+      type: String,
+      select: false, // don't expose OTP hash
+    },
+
+    otpExpiry: {
+      type: Date,
+    },
+
+    otpAttempts: {
+      type: Number,
+      default: 0,
+    },
+
     favourites: [Number],
 
     bookedTickets: [
