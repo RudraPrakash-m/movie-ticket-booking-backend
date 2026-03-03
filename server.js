@@ -5,6 +5,9 @@ const cookieParser = require("cookie-parser");
 const publicRouter = require("./users/public/routes/publicRouter");
 const connectDB = require("./congif/db/db");
 const privateRouter = require("./users/private/routes/privateRouter");
+const AdminRouter = require("./users/admin/routes/adminRoute");
+const isAdmin = require("./middlewares/isAdmin");
+const authMiddleware = require("./middlewares/Authentication");
 
 const app = express();
 
@@ -30,7 +33,9 @@ app.get("/", (req, res) => {
 
 app.use("/api", publicRouter);
 
-app.use("/api/user/",privateRouter)
+app.use("/api/user/", privateRouter);
+
+app.use("/api/admin/", authMiddleware, isAdmin, AdminRouter);
 
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);

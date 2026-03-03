@@ -6,9 +6,15 @@ const {
   me,
   logout,
   verifyOtp,
+  allMovies,
+  addMovie,
+  updateMovie,
+  deleteMovie,
+  addShow,
 } = require("../controller/publicController");
 const rateLimit = require("express-rate-limit");
 const authMiddleware = require("../../../middlewares/Authentication");
+const isAdmin = require("../../../middlewares/isAdmin");
 
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -27,6 +33,16 @@ publicRouter.get("/me", authMiddleware, me);
 
 publicRouter.post("/logout", authMiddleware, logout);
 
-publicRouter.post("/verify-otp", verifyOtp)
+publicRouter.post("/verify-otp", verifyOtp);
+
+publicRouter.get("/all-movies", allMovies);
+
+publicRouter.post("/add-movie", authMiddleware, isAdmin, addMovie);
+
+publicRouter.put("/update-movie/:id", authMiddleware, isAdmin, updateMovie);
+
+publicRouter.delete("/delete-movie/:id", authMiddleware, isAdmin, deleteMovie);
+
+publicRouter.post("/add-show/:id",authMiddleware, isAdmin, addShow);
 
 module.exports = publicRouter;

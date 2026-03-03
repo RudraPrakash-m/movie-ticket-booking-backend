@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { sendOtpEmail } = require("../../../congif/email/authController");
+const MOVIE_MODEL = require("../../../models/movieModel");
 
 // --------------------------------------
 // Helper: Generate Token + Set Cookie
@@ -318,6 +319,137 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+const allMovies = async (req, res) => {
+  try {
+    const movies = await MOVIE_MODEL.find().sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: movies.length,
+      data: movies,
+    });
+  } catch (error) {
+    console.error("Error fetching movies:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch movies",
+    });
+  }
+};
+
+const addMovie = async (req, res) => {
+  try {
+    const lastMovie = await MOVIE_MODEL.findOne().sort({ id: -1 });
+
+    const newId = lastMovie ? lastMovie.id + 1 : 1;
+
+    const movie = new MOVIE_MODEL({
+      ...req.body,
+      id: newId, // 🔥 generated here
+      shows: [],
+    });
+
+    await movie.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Movie added successfully",
+      data: movie,
+    });
+  } catch (error) {
+    console.error("Add Movie Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const updateMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updatedMovie = await MOVIE_MODEL.findOneAndUpdate(
+      { id: Number(id) },
+      req.body,
+      { new: true },
+    );
+
+    if (!updatedMovie) {
+      return res.status(404).json({
+        success: false,
+        message: "Movie not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Movie updated",
+      data: updatedMovie,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update movie",
+    });
+  }
+};
+
+const deleteMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedMovie = await MOVIE_MODEL.findOneAndDelete({
+      id: Number(id),
+    });
+
+    if (!deletedMovie) {
+      return res.status(404).json({
+        success: false,
+        message: "Movie not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Movie deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete movie",
+    });
+  }
+};
+
+const addShow = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updatedMovie = await MOVIE_MODEL.findOneAndUpdate(
+      { id: Number(id) },
+      { $push: { shows: req.body } },
+      { new: true },
+    );
+
+    if (!updatedMovie) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Movie not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedMovie,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to add show" });
+  }
+};
+
 module.exports = {
   publicPage,
   register,
@@ -325,4 +457,9 @@ module.exports = {
   me,
   logout,
   verifyOtp,
+  allMovies,
+  addMovie,
+  updateMovie,
+  deleteMovie,
+  addShow,
 };
