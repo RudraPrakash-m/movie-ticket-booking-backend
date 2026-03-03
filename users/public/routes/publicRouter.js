@@ -11,6 +11,9 @@ const {
   updateMovie,
   deleteMovie,
   addShow,
+  theaterLayout,
+  createTheater,
+  updateTheater,
 } = require("../controller/publicController");
 const rateLimit = require("express-rate-limit");
 const authMiddleware = require("../../../middlewares/Authentication");
@@ -43,6 +46,12 @@ publicRouter.put("/update-movie/:id", authMiddleware, isAdmin, updateMovie);
 
 publicRouter.delete("/delete-movie/:id", authMiddleware, isAdmin, deleteMovie);
 
-publicRouter.post("/add-show/:id",authMiddleware, isAdmin, addShow);
+publicRouter.post("/add-show/:id", authMiddleware, isAdmin, addShow);
+
+publicRouter.get("/theater-layout", theaterLayout);
+
+publicRouter.post("/create-theater", authMiddleware, isAdmin, createTheater);
+
+publicRouter.put("/update-theater/:id", authMiddleware, isAdmin, updateTheater);
 
 module.exports = publicRouter;

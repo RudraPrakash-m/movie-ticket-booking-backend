@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { sendOtpEmail } = require("../../../congif/email/authController");
 const MOVIE_MODEL = require("../../../models/movieModel");
+const THEATER_MODEL = require("../../../models/theaterModel");
 
 // --------------------------------------
 // Helper: Generate Token + Set Cookie
@@ -450,6 +451,135 @@ const addShow = async (req, res) => {
   }
 };
 
+const theaterLayout = async (req, res) => {
+  try {
+    const theaters = await THEATER_MODEL.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: theaters.length,
+      data: theaters,
+    });
+  } catch (error) {
+    console.error("Error fetching theater layout:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching theater layout",
+    });
+  }
+};
+
+const createTheater = async (req, res) => {
+  try {
+    const { name, rows, seatsPerRow } = req.body;
+
+    if (!name || !rows || !seatsPerRow) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // 🔥 Find highest existing id
+    const lastTheater = await THEATER_MODEL.findOne().sort({ id: -1 });
+
+    const nextId = lastTheater ? lastTheater.id + 1 : 1;
+
+    const newTheater = await THEATER_MODEL.create({
+      id: nextId,
+      name,
+      rows,
+      seatsPerRow,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Theater created successfully",
+      data: newTheater,
+    });
+  } catch (error) {
+    console.error("Create theater error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+const updateTheater = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, rows, seatsPerRow } = req.body;
+
+    // 🔥 Basic validation
+    if (!name || !rows || !seatsPerRow) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // 🔥 Validate rows properly
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Rows must be a non-empty array",
+      });
+    }
+
+    // 🔥 Validate seatsPerRow
+    if (Number(seatsPerRow) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Seats per row must be greater than 0",
+      });
+    }
+
+    // 🔥 Check duplicate screen name (excluding current screen)
+    const existingScreen = await THEATER_MODEL.findOne({
+      name: name.trim(),
+      id: { $ne: Number(id) }, // exclude current id
+    });
+
+    if (existingScreen) {
+      return res.status(400).json({
+        success: false,
+        message: "Screen name already exists",
+      });
+    }
+
+    // 🔥 Update screen
+    const updatedTheater = await THEATER_MODEL.findOneAndUpdate(
+      { id: Number(id) },
+      {
+        name: name.trim(),
+        rows,
+        seatsPerRow: Number(seatsPerRow),
+      },
+      { new: true },
+    );
+
+    if (!updatedTheater) {
+      return res.status(404).json({
+        success: false,
+        message: "Screen not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Screen updated successfully",
+      data: updatedTheater,
+    });
+  } catch (error) {
+    console.error("Update screen error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating screen",
+    });
+  }
+};
+
 module.exports = {
   publicPage,
   register,
@@ -462,4 +592,7 @@ module.exports = {
   updateMovie,
   deleteMovie,
   addShow,
+  theaterLayout,
+  createTheater,
+  updateTheater,
 };
