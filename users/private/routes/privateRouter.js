@@ -7,6 +7,7 @@ const {
   holdSeats,
   confirmSeats,
   releaseSeats,
+  getMyBookings,
 } = require("../controller/privateController");
 
 const privateRouter = express.Router();
@@ -28,5 +29,7 @@ privateRouter.post("/hold-seats", authMiddleware, holdSeats);
 privateRouter.post("/confirm-seats", authMiddleware, confirmSeats);
 
 privateRouter.post("/release-seats", authMiddleware, releaseSeats);
+
+privateRouter.get("/my-bookings", authMiddleware, getMyBookings);
 
 module.exports = privateRouter;

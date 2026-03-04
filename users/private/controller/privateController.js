@@ -310,6 +310,44 @@ const releaseSeats = async (req, res) => {
   }
 };
 
+const getMyBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const bookings = await BOOKING_MODEL.find({ userId })
+      .populate({
+        path: "movieId",
+        model: "movie",
+      })
+      .sort({ createdAt: -1 });
+
+    const formattedBookings = bookings.map((booking) => {
+      const movie = booking.movieId;
+
+      const show = movie?.shows?.find(
+        (s) => s._id.toString() === booking.showId.toString(),
+      );
+
+      return {
+        ...booking._doc,
+        show,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      bookings: formattedBookings,
+    });
+  } catch (error) {
+    console.error("BOOKING FETCH ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   toggleFavourite,
   createPayment,
@@ -317,4 +355,5 @@ module.exports = {
   holdSeats,
   confirmSeats,
   releaseSeats,
+  getMyBookings,
 };
