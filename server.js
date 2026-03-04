@@ -33,9 +33,9 @@ app.get("/", (req, res) => {
 
 app.use("/api", publicRouter);
 
-app.use("/api/user/", privateRouter);
+app.use("/api/user", privateRouter);
 
-app.use("/api/admin/", authMiddleware, isAdmin, AdminRouter);
+app.use("/api/admin", authMiddleware, isAdmin, AdminRouter);
 
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
